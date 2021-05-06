@@ -1,7 +1,9 @@
 from typing import Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
+
+from starlette.websockets import WebSocketDisconnect
 
 app = FastAPI()
 
@@ -26,5 +28,7 @@ async def websocket_endpoint(websocket: WebSocket):
         try:
             data = await websocket.receive_text()
             await manager.broadcast(data)
-        except:
+
+        except RuntimeError and WebSocketDisconnect:
+            manager.connections.remove(websocket)
             break
