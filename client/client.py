@@ -1,13 +1,44 @@
-import websockets
-
+from tkinter import *
+from websocket import create_connection
+from threading import Thread
 import asyncio
+import uuid
 
-async def main():
-    async with websockets.connect("ws://127.0.0.1:8000/ws") as websocket:
+class Window(Tk):   
+    def __init__(self):
+        super().__init__()
+        
+        self.ws = create_connection("ws://127.0.0.1:8000/ws")
+
+        self.title('Chat')
+        self.geometry("700x500")
+        self.resizable(0, 0)
+
+        self.id_ = str(uuid.uuid1())
+
+        self.scrollbar = Scrollbar()
+        self.text = Text(self, yscrollcommand=self.scrollbar.set, state='disabled')
+        self.scrollbar.config(command=self.text.yview)
+        self.scrollbar.pack(side=RIGHT, fill=Y)
+        self.text.pack()
+
+        self.b_send = Button(text='send', command=self.send, width=20, height=2)
+        self.b_send.place(x=500, y=430)
+
+        self.ent = Entry(font=("Arial 30"))
+        self.ent.place(x=10, y=430)
+
+        Thread(target=self.get).start()
+
+    def get(self):
         while True:
-            await websocket.send(input())
-            print(await websocket.recv())
+            result = self.ws.recv()
+            self.text.config(state='normal')
+            self.text.insert(END, result + "\n")
+            self.text.config(state='disabled')
 
+    def send(self):
+        text = self.ent.get()
+        self.ws.send(f"{self.id_}: {text}")
 
-if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+Window().mainloop()
