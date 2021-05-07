@@ -29,6 +29,6 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             await manager.broadcast(data)
 
-        except RuntimeError and WebSocketDisconnect:
+        except WebSocketDisconnect:
             manager.connections.remove(websocket)
             break
