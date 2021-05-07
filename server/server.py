@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse
 
 from starlette.websockets import WebSocketDisconnect
 
+from DateBase import Message
+
 app = FastAPI()
 
 class ConnectionManager:
@@ -27,6 +29,7 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         try:
             data = await websocket.receive_text()
+            await Message(data)
             await manager.broadcast(data)
 
         except WebSocketDisconnect:
